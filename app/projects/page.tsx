@@ -5,14 +5,9 @@ import ProjectCard, {
 } from '@/components/Projects/ProjectCard/ProjectCard';
 import { useState } from 'react';
 
-type ProjectsPageProps = {
-  searchValue: string;
-  setSearchValue: (value: string) => void;
-};
-
 const ProjectsPage: React.FC = () => {
   const [searchValue, setSearchValue] = useState('');
-
+  const [sortOption, setSortOption] = useState<string>('');
   const exampleProjectCardData: ProjectCardProps = {
     projectThumbnailSrc: '/',
     updatedDate: new Date('2023/3/14'),
@@ -35,7 +30,7 @@ const ProjectsPage: React.FC = () => {
   };
 
   const randomProjectCardData: ProjectCardProps = {
-    projectThumbnailSrc: '/path/to/random-thumbnail.jpg',
+    projectThumbnailSrc: '/',
     updatedDate: new Date('2023/5/10'),
     createdDate: new Date('2023/4/1'),
     projectName: 'פרויקט רנדומלי XYZ',
@@ -45,17 +40,17 @@ const ProjectsPage: React.FC = () => {
       { imageSrc: '/images/avatars/avatar2.jpg?0', name: 'מרים לוי' },
       { imageSrc: '/images/avatars/avatar3.jpg?0', name: 'יוסי כהן' },
     ],
-    description: `פסקת תיאור של הפרויקט הרנדומלי. פרטים על הפרויקט, הטכנולוגיות שבו, המטרות והאתגרים.`,
+    description: `פסקת תיאור של הפרויקט האקראי. פרטים על הפרויקט, הטכנולוגיות שבו, המטרות והאתגרים.`,
     tags: ['React', 'Node.js', 'MongoDB'],
     githubLink: 'https://github.com/random/repo',
     discordLink: 'https://discord.gg/randomlink',
   };
 
   const randomProjectCardData1: ProjectCardProps = {
-    projectThumbnailSrc: '/path/to/random-thumbnail1.jpg',
+    projectThumbnailSrc: '/',
     updatedDate: new Date('2023/6/15'),
     createdDate: new Date('2023/5/5'),
-    projectName: 'פרויקט רנדומלי ABC',
+    projectName: 'פרויקט אקראי ABC',
     contributorCount: 50,
     contributorAvatars: [
       { imageSrc: '/images/avatars/avatar3.jpg?0', name: 'דני רוזן' },
@@ -68,7 +63,7 @@ const ProjectsPage: React.FC = () => {
   };
 
   const randomProjectCardData2: ProjectCardProps = {
-    projectThumbnailSrc: '/path/to/random-thumbnail2.jpg',
+    projectThumbnailSrc: '/',
     updatedDate: new Date('2023/7/20'),
     createdDate: new Date('2023/6/10'),
     projectName: 'פרויקט רנדומלי DEF',
@@ -84,10 +79,10 @@ const ProjectsPage: React.FC = () => {
   };
 
   const randomProjectCardData3: ProjectCardProps = {
-    projectThumbnailSrc: '/path/to/random-thumbnail3.jpg',
+    projectThumbnailSrc: '/',
     updatedDate: new Date('2023/8/25'),
     createdDate: new Date('2023/7/15'),
-    projectName: 'פרויקט רנדומלי GHI',
+    projectName: 'פרויקט אקראי GHI',
     contributorCount: 60,
     contributorAvatars: [
       { imageSrc: '/images/avatars/avatar5.jpg?0', name: 'מיכל כהן' },
@@ -107,17 +102,54 @@ const ProjectsPage: React.FC = () => {
     randomProjectCardData3,
   ];
 
-  const filteredProjects = allProjects.filter(project =>
-      project.projectName.includes(searchValue)
+  const [projects, setProjects] = useState<ProjectCardProps[]>(allProjects);
+
+  const handleSortOptionChange = (option: string) => {
+    setSortOption(option);
+  };
+
+  const getSortedProjects = (projectsToSort: ProjectCardProps[]) => {
+    let sortedProjects = [...projectsToSort];
+    switch (sortOption) {
+      case 'עודכן לאחרונה':
+        sortedProjects.sort(
+          (a, b) => b.updatedDate.getTime() - a.updatedDate.getTime()
+        );
+        break;
+      case 'מספר תורמים':
+        sortedProjects.sort((a, b) => b.contributorCount - a.contributorCount);
+        break;
+      case 'נוצר לאחרונה':
+        sortedProjects.sort(
+          (a, b) => b.createdDate.getTime() - a.createdDate.getTime()
+        );
+        break;
+      case 'אקראי':
+        sortedProjects = sortedProjects
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 5);
+        break;
+    }
+    return sortedProjects;
+  };
+
+  const filteredProjects = getSortedProjects(
+    allProjects.filter(project =>
+      project.projectName.toLowerCase().includes(searchValue.toLowerCase())
+    )
   );
 
   return (
-      <section className="h-full">
-        <FiltersBar searchValue={searchValue} setSearchValue={setSearchValue} />
-        {filteredProjects.map(project => (
-            <ProjectCard key={project.projectName} {...project} />
-        ))}
-      </section>
+    <section className="h-full">
+      <FiltersBar
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
+        onSortOptionChange={handleSortOptionChange}
+      />
+      {filteredProjects.map(project => (
+        <ProjectCard key={project.projectName} {...project} />
+      ))}
+    </section>
   );
 };
 
